@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Configuration;
 using Bicep.Core.Decompiler.Rewriters;
 using Bicep.Core.Extensions;
@@ -121,8 +122,9 @@ namespace Bicep.Decompiler
             var hasChanges = false;
             var dispatcher = new ModuleDispatcher(this.registryProvider);
             var configuration = configurationManager.GetBuiltInConfiguration(disableAnalyzers: true);
+            var linterAnalyzer = new LinterAnalyzer(configuration);
             var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, dispatcher, workspace, entryUri, configuration);
-            var compilation = new Compilation(namespaceProvider, sourceFileGrouping, configuration);
+            var compilation = new Compilation(namespaceProvider, sourceFileGrouping, configuration, linterAnalyzer);
 
             foreach (var (fileUri, sourceFile) in workspace.GetActiveSourceFilesByUri())
             {
@@ -140,7 +142,7 @@ namespace Bicep.Decompiler
                     workspace.UpsertSourceFile(newFile);
 
                     sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, dispatcher, workspace, entryUri, configuration);
-                    compilation = new Compilation(namespaceProvider, sourceFileGrouping, configuration);
+                    compilation = new Compilation(namespaceProvider, sourceFileGrouping, configuration, linterAnalyzer);
                 }
             }
 
